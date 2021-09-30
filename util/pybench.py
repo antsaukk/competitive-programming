@@ -7,7 +7,7 @@ def readMultipleLinesTwo():
 def readMultipleLinesOne(): 
 	N = 1000000
 	S = 0
-	for i in range(N): #xrange
+	for i in range(N):
 		S += int(input())
 	print(S)
 
