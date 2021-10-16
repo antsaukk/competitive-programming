@@ -1,32 +1,36 @@
-from itertools import permutations
-from collections import Counter
-import math
-import string
-
-def solve1(x):
-	print(len(set(permutations(x))))
+MAX_CHAR = 26
+ 
+# Utility function to find factorial of n.
+def factorial(n) :
+     
+    fact = 1;
+    for i in range(2, n + 1) :
+        fact = fact * i;
+    return fact
 
 
 def solve(x):
-	L = len(x)
-	freq = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-	#print(len(freq))
-	
-	for i in range(0, L) :
+	length = len(x)
+	freq = [0] * MAX_CHAR
+
+	for i in range(0, length) :
 		if (x[i] >= 'a') :
 			freq[(ord)(x[i]) - 97] = freq[(ord)(x[i]) - 97] + 1;
    
-	repetition = 1
-	for i in range(26) :
-		repetition = repetition * math.factorial(freq[i])
+	fact = 1
+	for i in range(0, MAX_CHAR) :
+		fact = fact * factorial(freq[i])
    
-	print(int(math.factorial(L)/repetition))
-	
+	print(int(factorial(length)/fact))
+
 
 def main():
 	x = input()
-	#solve1(x)
 	solve(x)
 
 if __name__ == "__main__":
 	main()
+
+
+
+	
