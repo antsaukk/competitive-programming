@@ -67,7 +67,7 @@ i64 solveScaling() {
 	i64 flow = 0;
 	while(threshold > 0) {
 		do {
-			//falsify();
+			falsify();
 			flow = DFS(source, INF);
 			maxflow+=flow;
 		} while(flow!=0);
