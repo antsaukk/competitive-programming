@@ -22,9 +22,15 @@ struct Edge {
 		return node==node1 ? node2 : node1;
 	}
 
-	void augment(i64 flow) {
-		fcap -= flow;
-		bcap += flow;
+	void augment(size_t node, i64 flow) {
+		if (forward(to(node))) {
+			fcap -= flow;
+			bcap += flow;
+		} else {
+			fcap += flow;
+			bcap -= flow;
+		}
+		
 	}
 
 	bool forward(size_t node) {
@@ -102,7 +108,7 @@ i64 DFSlist(size_t node, i64 flow) {
 		if (scalingCondition(cap)){
 			i64 f = DFSlist(edge->to(node), min(flow, cap));
 			if (f > 0) {
-				edge->augment(f);
+				edge->augment(node, f);
 				return f;
 			}
 		}
