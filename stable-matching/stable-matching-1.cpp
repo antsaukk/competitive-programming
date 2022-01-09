@@ -1,6 +1,8 @@
 
 /*  Auto-built C++ source file 'stable-matching.cpp'.  */
 
+/* to run g++ -O3 -Werror -Wall --pedantic -std=c++17 -march=native -fopenmp -o stable-matching stable-matching.cpp */
+
 /******************************************************************************
 
   Aalto University

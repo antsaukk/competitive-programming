@@ -1,6 +1,8 @@
 
 /*  Auto-built C++ source file 'vertex-cover.cpp'.  */
 
+/* to run g++ -O3 -Werror -Wall --pedantic -std=c++17 -march=native -fopenmp -o vertex-cover vertex-cover.cpp */
+
 /******************************************************************************
 
   Aalto University

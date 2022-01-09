@@ -1,6 +1,8 @@
 
 /*  Auto-built C++ source file 'edit-distance.cpp'.  */
 
+/* to run g++ -O3 -Werror -Wall --pedantic -std=c++17 -march=native -fopenmp -o edit-distance edit-distance.cpp */
+
 /******************************************************************************
 
   Aalto University

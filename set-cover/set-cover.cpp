@@ -1,6 +1,8 @@
 
 /*  Auto-built C++ source file 'set-cover.cpp'.  */
 
+/* to run g++ -O3 -Werror -Wall --pedantic -std=c++17 -march=native -fopenmp -o set-cover set-cover.cpp */
+
 /******************************************************************************
 
   Aalto University
