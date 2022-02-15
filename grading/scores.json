@@ -1,0 +1,112 @@
+{
+    "name": "Anton Saukkonen",
+    "email": "anton.saukkonen@aalto.fi",
+    "studentnum": "700436",
+    "contests": [
+        {
+            "date": "2021-09-13",
+            "url": "https://cses.fi/363/scores/",
+            "account": "ntsaukk",
+            "solved": 1,
+            "points": 1
+        },
+        {
+            "date": "2021-09-15",
+            "url": "https://cses.fi/364/scores/",
+            "account": "ntsaukk",
+            "solved": 1,
+            "points": 1
+        },
+        {
+            "date": "2021-09-22",
+            "url": "https://cses.fi/366/scores/",
+            "account": "ntsaukk",
+            "solved": 1,
+            "points": 1
+        },
+        {
+            "date": "2021-09-27",
+            "url": "https://cses.fi/368/scores/",
+            "account": "ntsaukk",
+            "solved": 1,
+            "points": 1
+        },
+        {
+            "date": "2021-09-29",
+            "url": "https://cses.fi/369/scores/",
+            "account": "team_ata",
+            "solved": 4,
+            "points": 2
+        },
+        {
+            "date": "2021-10-06",
+            "url": "https://cses.fi/371/scores/",
+            "account": "team_ata",
+            "solved": 5,
+            "points": 2
+        },
+        {
+            "date": "2021-10-09",
+            "url": "https://ncpc21.kattis.com/standings",
+            "account": "Team ESA",
+            "solved": 6,
+            "points": 4
+        },
+        {
+            "date": "2021-10-13",
+            "url": "https://cses.fi/373/scores/",
+            "account": "team_ata",
+            "solved": 2,
+            "points": 1
+        },
+        {
+            "date": "2021-10-18",
+            "url": "https://cses.fi/375/scores/",
+            "account": "ntsaukk",
+            "solved": 1,
+            "points": 1
+        },
+        {
+            "date": "2021-10-20",
+            "url": "https://cses.fi/377/list/",
+            "account": "team_ata",
+            "solved": 2,
+            "points": 1
+        },
+        {
+            "date": "2021-11-03",
+            "url": "https://cses.fi/379/scores/",
+            "account": "ntsaukk",
+            "solved": 2,
+            "points": 2
+        },
+        {
+            "date": "2021-11-08",
+            "url": "https://cses.fi/380/scores/",
+            "account": "ntsaukk",
+            "solved": 2,
+            "points": 2
+        },
+        {
+            "date": "2021-11-10",
+            "url": "https://cses.fi/381/scores/",
+            "account": "TeamESA",
+            "solved": 3,
+            "points": 2
+        },
+        {
+            "date": "2021-11-17",
+            "url": "https://cses.fi/383/scores/",
+            "account": "TeamESA",
+            "solved": 1,
+            "points": 1
+        },
+        {
+            "date": "2021-11-24",
+            "url": "https://cses.fi/386/scores/",
+            "account": "TeamESA",
+            "solved": 4,
+            "points": 2
+        }
+    ]
+}
