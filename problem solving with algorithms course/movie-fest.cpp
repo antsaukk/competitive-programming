@@ -15,7 +15,7 @@ CONSTRAINTS:
 1 <= n <= 2*10^5
 1 <= a <= b <= 10^9
 RESULT:
-not finished
+https://cses.fi/alon/result/3647355/
 */
 
 #include <iostream>
@@ -42,14 +42,14 @@ void read(vector<P>& v) {
         }
 }
 
-// look at chap6 competitives programmer handbook
+// greedy algorithm that selects the event which ends as early as possible
 ui64 solve(vector<P>& v){
         ui64 count = 1;
         ui64 last_selected = 0;
         for(size_t current = 1; current < v.size(); current++) {
                 if (v[current].first >= v[last_selected].second) {
                         count++;
-                        last_selected++;
+                        last_selected = current;
                 }
         }
         return count;
@@ -73,7 +73,8 @@ int main() {
 
         auto cmp = [](const P& p1, 
                       const P& p2) {
-                if(p1.second < p2.second) return true;
+                if(p1.second < p2.second) 
+                        return true;
                 if(p1.second == p2.second) 
                         return p1.first < p2.first;
                 return false;
