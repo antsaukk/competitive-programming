@@ -24,7 +24,7 @@ CONSTRAINTS:
 1 <= n <= 2*10^5
 1 <= a, b <= 10^9
 RESULT:
-https://cses.fi/alon/result/3711416/
+https://cses.fi/alon/result/3711571/
 
 DISCLAIMER: 
 Clearly note the most efficient solution, bur works nice within the constains 
@@ -48,7 +48,7 @@ void display(T val) {
         cout << val;
 }
 
-template <typename T>
+template <typename T, typename M>
 class Hotel {
 public:
         explicit Hotel(size_t N) :
@@ -85,27 +85,34 @@ public:
         */
         void compute_optimal_times() {
                 auto arrival = arrivals_history[0];
-
-                stays_duration_.insert({get<1>(arrival), 1});
+                stays_duration_.insert({arrival_finish_time(arrival), 1});
                 free_rooms.erase(1);
                 increase_number_of_bookings();
-                book(1, get<2>(arrival));
+                book(1, arrival_order(arrival));
                 for(size_t i = 1; i < get_size(); i++) {
                         auto arrival = arrivals_history[i];
-                        if (get<0>(arrival) > stays_duration_.begin()->first) {
-                                size_t room = stays_duration_.begin()->second;
-                                stays_duration_.erase(stays_duration_.begin());
-                                stays_duration_.insert({get<1>(arrival),room});
-                                book(room, get<2>(arrival));
+                        if (arrival_start_time(arrival) > booking_finish_time()) {
+                                rebook_first_free_room(arrival);
                         } else {
-                                auto room = free_rooms.begin();
-                                stays_duration_.insert({get<1>(arrival), *room});
-                                free_rooms.erase(free_rooms.begin());
-                                increase_number_of_bookings();
-                                book(*room, get<2>(arrival));
+                                book_next_available_room(arrival);
                         }
                 }
                 
+        }
+
+        void rebook_first_free_room(Arrival& arrival) {
+                auto room = booking_room_number();
+                stays_duration_.erase(stays_duration_.begin());
+                stays_duration_.insert({arrival_finish_time(arrival),room});
+                book(room, arrival_order(arrival));
+        }
+
+        void book_next_available_room(Arrival& arrival) {
+                auto room = free_rooms.begin();
+                stays_duration_.insert({arrival_finish_time(arrival), *room});
+                free_rooms.erase(free_rooms.begin());
+                increase_number_of_bookings();
+                book(*room, arrival_order(arrival));
         }
 
         const void show_booking_history() const {
@@ -125,12 +132,22 @@ public:
                 bookings_history_[index] = room_number;
         }
 
+        const M booking_room_number()                   const { return stays_duration_.begin()->second; }
+
+        const T booking_finish_time()                   const { return stays_duration_.begin()->first; }
+
+        const T arrival_start_time(Arrival& arrival)    const { return get<0>(arrival); }
+
+        const T arrival_finish_time(Arrival& arrival)   const { return get<1>(arrival); }
+
+        const T arrival_order(Arrival& arrival)         const { return get<2>(arrival); }
+
         const T get_size() const { return size_; }
 
 private:
         T minimal_bookings = 0;
         T size_            = 0;
-        set<pair<T, size_t>> stays_duration_;
+        set<pair<T, M>> stays_duration_;
         vector<T> bookings_history_;
         vector<Arrival> arrivals_history;
         set<T> free_rooms;
@@ -148,7 +165,7 @@ int main() {
         ui64 n; 
         cin >> n;
 
-        Hotel<ui64> hotel(n);
+        Hotel<ui64, size_t> hotel(n);
         hotel.compute_optimal_times();
         hotel.show_booking_history();
 
