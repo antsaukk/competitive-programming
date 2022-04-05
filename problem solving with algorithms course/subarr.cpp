@@ -89,7 +89,7 @@ void solve(Container& container,
         }
 }*/
 
-size_t upper_bound(size_t left, size_t range, size_t size_) {
+size_t lower_bound(size_t left, size_t range, size_t size_) {
         return left + range < size_ ? left + range : size_;
 }
  
@@ -100,7 +100,7 @@ void solve(vector<T>& container,
 {
         // compute upper the least bound for subarray
         // starting at 0
-        size_t right = upper_bound(0u, range, size_);
+        size_t right = lower_bound(0u, range, size_);
 
         // to count frequency of values in subarrays
         map<T,size_t> bucket;
@@ -111,29 +111,27 @@ void solve(vector<T>& container,
         }
 
         for(size_t left = 0; left < size_; left++) {
-                right = upper_bound(left, range, size_);
+                right = lower_bound(left, range, size_);
                 
                 // at index left there ar eat least right-left subarrays
+                // if right < size_
                 increase_number_of_subarrays(right-left);
 
-                // shifting least upperbound by 1
+                // shifting least lowerbound by 1
                 // check how many subarrays can still be formed
-                for (size_t counter = right; counter < size_; counter++) {
-                        bucket[container[counter]]++;
-
-                        // increase amount of subarrays if there is
-                        // still space in a bucket or finish
+                while(right < size_) {
+                        bucket[container[right]]++;
                         if (there_is_space_in_a_bucket(bucket, range)) {
                                 increase_number_of_subarrays(1u); //
                         } else {
-                                right = counter;
                                 break;
                         }
+                        right++;
                 }
                 
                 // if bucket has "overflowed": 
-                // check whether you can delete the left most element
-                // or the right most element
+                // check whether you can delete the leftmost element
+                // or the rightmost element
                 if (right < size_) {
                         if (bucket.at(container[left]) == 1) {
                                 bucket.erase(container[left]);
@@ -143,7 +141,11 @@ void solve(vector<T>& container,
                         }
 
                 } else {
-                        bucket[container[left]]--;
+                        if (bucket.at(container[left]) > 1)
+                                bucket[container[left]]--;
+                        else
+                                bucket.erase(container[left]);
+                        
                 }
                 
 
