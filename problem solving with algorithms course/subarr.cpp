@@ -11,7 +11,7 @@ CONSTRAINTS:
 1 <= k, n <= 2*10^5
 1 <= x_i <= 10^9
 RESULT:
-
+https://cses.fi/alon/result/3800786/
 */
 
 #include <iostream>
@@ -24,11 +24,16 @@ RESULT:
  
 using namespace std;
 
-ui64 subarrays = 0;
- 
+// generic print to stdout
 template<typename T>
 void display(T val) {
         cout << val;
+}
+
+// untie std in/out to speed up computation
+void desyncio() {
+        ios_base::sync_with_stdio(false);
+        cin.tie(nullptr);
 }
 
 template<typename T,
@@ -41,7 +46,7 @@ public:
         k_(k),
         subarrays_(0),
         bound_(0),
-        right_pointer_(0),
+        right_(0),
         container_(n)
         {
                 read();
@@ -53,225 +58,143 @@ public:
                         cin >> container_[i]; 
         }
 
-        bool there_is_space_in_a_bucket()
-        {
-                return bucket_sz() <= range_();
-        }
-
-        void increase_number_of_subarrays(K s) 
-        {
-                subarrays_ += s;
-        }
-
-        K lower_bound(K start) 
-        {
-                return start + range_() < size_() ? start + range_() : size_();
-        }
-
         void init_bucket()
         {
                 set_right_pointer(lower_bound(0u));
-                for(size_t left = 0; left < right_pointer_; left++)
-                        bucket_[container_[left]]++;
+                for(size_t left = 0; left < right_pointer_(); left++)
+                        increase_element_in_bucket(left);
         }
 
-        void solve() 
-        {
-               // compute upper the least bound for subarray
-                // starting at 0
-                //size_t right = lower_bound(0u);
+        K lower_bound(K start)                  { return start + range_() < size_() ? start + range_() : size_(); }
 
-                // add values of subarray from [0, right)
-                init_bucket();
+        bool there_is_space_in_a_bucket()       { return bucket_sz() <= range_();}
 
-                for(size_t left = 0; left < size_(); left++) {
-                        //right = lower_bound(left);
-                        set_right_pointer(lower_bound(left));
-                        
-                        // at index left there ar eat least right-left subarrays
-                        // if right < size_
-                        increase_number_of_subarrays(right_pointer_-left);
+        void increase_number_of_subarrays(K s)  { subarrays_ += s; }
 
-                        // shifting least lowerbound by 1
-                        // check how many subarrays can still be formed
-                        while(right_pointer_ < size_() && there_is_space_in_a_bucket()) {
-                                if (right_pointer_ >= get_bound_())
-                                        bucket_[container_[right_pointer_]]++;
-                                if (there_is_space_in_a_bucket()) {
-                                        increase_number_of_subarrays(1u);
-                                        right_pointer_++;
-                                }
-                        }
+        void remove_from_bucket(T element)      { bucket_.erase(element); }
 
-                        set_bound(max(right_pointer_, get_bound_()));
-                        
-                        // if bucket_ has "overflowed": 
-                        // check whether you can delete the leftmost element
-                        // or the rightmost element from the range_() 
-                        // starting at left
-                        if (!there_is_space_in_a_bucket()) {
-                                try {
-                                        if (bucket_.at(container_[left])==1){
-                                                bucket_.erase(container_[left]);
-                                                bound_++;
-                                        }
-                                        else {
-                                                bucket_[container_[left]]--;
-                                                bucket_.erase(container_[right_pointer_]);
-                                        }   
-                                } catch (const std::exception& e) {
-                                        display(e.what());
-                                }
-                                
-                        } else if (there_is_space_in_a_bucket() && right_pointer_ == size_()) {
-                                try {
-                                        if (bucket_.at(container_[left])==1)
-                                                bucket_.erase(container_[left]);
-                                        else {
-                                                bucket_[container_[left]]--;
-                                                
-                                        }
-                                } catch (const std::exception& e) {
-                                        display(e.what());
-                                }
-                                
-                        }
-                }
-        }
+        void decrease_element_in_bucket(K left) { bucket_[container_[left]]--; }
 
-        const void show()              const { display(number_of_subarrays_()); }
+        void increase_element_in_bucket(K left) { bucket_[container_[left]]++; }
 
-        void set_right_pointer(K r)          { right_pointer_ = r; }
+        void set_right_pointer(K r)             { right_ = r; }
 
-        void set_bound(K b)                  { bound_ = b; }
+        void set_bound(K b)                     { bound_ = b; }
 
-        const K get_bound_()           const { return bound_; }
+        const void show()                 const { display(number_of_subarrays_()); }
 
-        const K size_()                const { return n_; }
+        const K right_pointer_()          const { return right_; }
 
-        const K range_()               const { return k_; }
+        const K right_bound_()            const { return bound_; }
 
-        const K number_of_subarrays_() const { return subarrays_; }
+        const K size_()                   const { return n_; }
 
-        const size_t bucket_sz()       const { return bucket_.size(); }
+        const K range_()                  const { return k_; }
+
+        const K number_of_subarrays_()    const { return subarrays_; }
+
+        const size_t bucket_sz()          const { return bucket_.size(); }
+
+        void shift_right_pointer(); 
+        
+        void shift_left_pointer(K left);
+
+        void solve();
 
 private:
        K n_                 = 0;
        K k_                 = 0;
        K subarrays_         = 0;
        K bound_             = 0;
-       K right_pointer_     = 0;
+       K right_             = 0;
        vector<T> container_;
        map<T,K> bucket_;
        
 };
- 
-template <typename T>
-void read(vector<T>& container, const size_t size_)
-{
-        for(size_t i = 0; i < size_; i++) {
-                ui64 element;
-                cin >> element;
-                container[i] = element;
-        }
-}
- 
+
 template <typename T,
           typename K>
-bool there_is_space_in_a_bucket(map<T,K>& bucket,
-                                K limit)
+void UniqueSubarrays<T,K>::solve()
 {
-        return bucket.size() <= limit;
-}
- 
-void increase_number_of_subarrays(size_t s) 
-{
-        subarrays+=s;
-}
-
-size_t lower_bound(size_t left, size_t range, size_t size_) {
-        return left + range < size_ ? left + range : size_;
-}
- 
-template <typename T>
-void solve(const vector<T>& container,
-                const size_t size_,
-                const size_t range)
-{
-        // compute upper the least bound for subarray
-        // starting at 0
-        size_t right = lower_bound(0u, range, size_);
-
-        // to count frequency of values in subarrays
-        map<T,size_t> bucket;
-
         // add values of subarray from [0, right)
-        for(size_t left = 0; left < right; left++) {
-                bucket[container[left]]++;
-        }
+        init_bucket();
 
-        size_t bound = 0;
-
-        for(size_t left = 0; left < size_; left++) {
-                right = lower_bound(left, range, size_);
-                
+        for(size_t left = 0; left < size_(); left++) 
+        {
+                // compute minimum number of subarrays 
+                // starting from index left
+                set_right_pointer(lower_bound(left));
+                        
                 // at index left there ar eat least right-left subarrays
                 // if right < size_
-                increase_number_of_subarrays(right-left);
+                increase_number_of_subarrays(right_pointer_() - left);
 
-                // shifting least lowerbound by 1
+                // if right pointer is not at the end
+                // and there is space in the bucket
                 // check how many subarrays can still be formed
-                while(right < size_ && there_is_space_in_a_bucket(bucket, range)) {
-                        if (right >= bound)
-                                bucket[container[right]]++;
-                        if (there_is_space_in_a_bucket(bucket, range)) {
-                                increase_number_of_subarrays(1u);
-                                right++;
-                        }
-                }
-
-                bound = max(right, bound);
-                
-                // if bucket has "overflowed": 
+                // starting from index right_pointer_
+                shift_right_pointer();
+                        
+                // if bucket_ has "overflowed": 
                 // check whether you can delete the leftmost element
-                // or the rightmost element from the range 
+                // or the rightmost element from the range right_pointer_ - left
                 // starting at left
-                if (!there_is_space_in_a_bucket(bucket, range)) {
-                        try {
-                                if (bucket.at(container[left])==1){
-                                        bucket.erase(container[left]);
-                                        bound++;
-                                }
-                                else {
-                                        bucket[container[left]]--;
-                                        bucket.erase(container[right]);
-                                }   
-                        } catch (const std::exception& e) {
-                                display(e.what());
+                shift_left_pointer(left);
+        }
+}
+
+template <typename T,
+          typename K>
+void UniqueSubarrays<T,K>::shift_left_pointer(K left)
+{
+        if (!there_is_space_in_a_bucket()) {
+                // catching exception if bucket.at(container[left])
+                // does not exists
+                try {
+                        if (bucket_.at(container_[left]) == 1){
+                                remove_from_bucket(container_[left]);
+                                set_bound(right_bound_() + 1);
                         }
-                        
-                } else if (there_is_space_in_a_bucket(bucket, range) && right == size_) {
-                        try {
-                                if (bucket.at(container[left])==1)
-                                        bucket.erase(container[left]);
-                                else {
-                                        bucket[container[left]]--;
-                                        
-                                }
-                        } catch (const std::exception& e) {
-                                display(e.what());
-                        }
-                        
+                        else {
+                                decrease_element_in_bucket(left);
+                                remove_from_bucket(container_[right_pointer_()]);
+                        }   
+                } catch (const exception& e) {
+                        display(e.what());
+                }     
+                } else if (right_pointer_() == size_()) {
+                // catching exception if bucket.at(container[left])
+                // does not exists
+                try {
+                        if (bucket_.at(container_[left]) == 1)
+                                remove_from_bucket(container_[left]);
+                        else
+                                decrease_element_in_bucket(left);
+                } catch (const exception& e) {
+                        display(e.what());
+                }  
+        }        
+}
+
+template <typename T,
+          typename K>
+void UniqueSubarrays<T,K>::shift_right_pointer()
+{
+        while(right_pointer_() < size_() && 
+                there_is_space_in_a_bucket()) {
+
+                if (right_pointer_() >= right_bound_())
+                        bucket_[container_[right_pointer_()]]++;
+
+                if (there_is_space_in_a_bucket()) {
+                        increase_number_of_subarrays(1u);
+                        set_right_pointer(right_pointer_() + 1);
                 }
         }
 
-}
- 
- 
-// untie std in/out to speed up computation
-void desyncio() {
-        ios_base::sync_with_stdio(false);
-        cin.tie(nullptr);
+        // check the bound to verify that frequencies of 
+        // elements in the map might increase
+        set_bound(max(right_pointer_(), right_bound_()));
 }
  
 int main() {
@@ -283,11 +206,6 @@ int main() {
         UniqueSubarrays<ui64, size_t> subarr(n, k);
         subarr.solve();
         subarr.show();
-        /*vector<ui64> v(n);
-        read(v, n);
-        solve(v, n, k);*/
- 
-        //display(subarrays);
  
         return 0;
 }
