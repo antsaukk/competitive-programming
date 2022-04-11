@@ -11,7 +11,7 @@ CONSTRAINTS:
 1 <= k, n <= 2*10^5
 1 <= x_i <= 10^9
 RESULT:
-https://cses.fi/alon/result/3800786/
+https://cses.fi/alon/result/3806538/
 */
 
 #include <iostream>
@@ -73,9 +73,9 @@ public:
 
         void remove_from_bucket(T element)      { bucket_.erase(element); }
 
-        void decrease_element_in_bucket(K left) { bucket_[container_[left]]--; }
+        void decrease_element_in_bucket(K index) { bucket_[container_[index]]--; }
 
-        void increase_element_in_bucket(K left) { bucket_[container_[left]]++; }
+        void increase_element_in_bucket(K index) { bucket_[container_[index]]++; }
 
         void set_right_pointer(K r)             { right_ = r; }
 
@@ -112,6 +112,16 @@ private:
        
 };
 
+
+/*
+At every index in array compute the maximum number 
+of arrays that have at most k_ distinct elements
+the sum of results for every index is the maximum
+amount of subarrays. 
+Solved with two pointers method in O(nlogn),
+where log comes from red-black tree searching,
+insertion and removal.
+*/
 template <typename T,
           typename K>
 void UniqueSubarrays<T,K>::solve()
@@ -121,24 +131,25 @@ void UniqueSubarrays<T,K>::solve()
 
         for(size_t left = 0; left < size_(); left++) 
         {
-                // compute minimum number of subarrays 
+                // define minimum number of subarrays 
                 // starting from index left
+                // be default it is at least "right-left"
+                // if "right < size_"
                 set_right_pointer(lower_bound(left));
-                        
-                // at index left there ar eat least right-left subarrays
-                // if right < size_
+                
+                // add up to result
                 increase_number_of_subarrays(right_pointer_() - left);
 
-                // if right pointer is not at the end
+                // if right pointer is not at the end of array
                 // and there is space in the bucket
                 // check how many subarrays can still be formed
-                // starting from index right_pointer_
+                // starting from index "right_pointer_"
                 shift_right_pointer();
                         
-                // if bucket_ has "overflowed": 
+                // if bucket_ has overflowed: 
                 // check whether you can delete the leftmost element
-                // or the rightmost element from the range right_pointer_ - left
-                // starting at left
+                // or the rightmost element from the range "right_pointer_ - left"
+                // starting at "left"
                 shift_left_pointer(left);
         }
 }
@@ -184,7 +195,7 @@ void UniqueSubarrays<T,K>::shift_right_pointer()
                 there_is_space_in_a_bucket()) {
 
                 if (right_pointer_() >= right_bound_())
-                        bucket_[container_[right_pointer_()]]++;
+                        increase_element_in_bucket(right_pointer_());
 
                 if (there_is_space_in_a_bucket()) {
                         increase_number_of_subarrays(1u);
