@@ -18,11 +18,16 @@ RESULT:
 
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <numeric>
+#include <ext/pb_ds/assoc_container.hpp>
+
+using namespace std;
+using namespace __gnu_pbds;
 
 #define ui64 uint64_t
 
-using namespace std;
+typedef tree<size_t,null_type,less<size_t>,rb_tree_tag,tree_order_statistics_node_update> indexed_set;
 
 template<typename T>
 void display(T val) {
@@ -43,6 +48,13 @@ public:
         range_(n)
         {
                 iota(range_.begin(), range_.end(), 1);
+                init_index_set_();
+        }
+
+        void init_index_set_() {
+                for (const auto el : range_) {
+                        Jcollection_.insert(el);
+                }
         }
 
         void increase_counter_()        { counter_++; }
@@ -57,6 +69,12 @@ public:
 
         void solve_naive_();
 
+        void solve_efficient_v1_();
+
+        void solve_efficient_v2_();
+
+        void empty_collection_();
+
 private:
         T n_            = 0;
         T counter_      = 0;
@@ -64,6 +82,8 @@ private:
         T index_        = 0;
         K k_            = 0;
         vector<T> range_;
+        indexed_set Jcollection_;
+        queue<T> removal_waiting_elements_;
 };
 
 template <typename T, typename K>
@@ -85,6 +105,46 @@ void JosephusCalculator<T,K>::
         }
 }
 
+template <typename T, typename K>
+void JosephusCalculator<T,K>::
+        solve_efficient_v1_(){
+        int64_t step = -1;
+        T current_index = index_;
+
+        while(run_) {
+
+                if (step == -1) {
+                        current_index += k_;
+                } else {
+                        current_index = step;
+                        step          = -1;
+                }
+                
+                if (current_index < n_) {
+                        auto element  = Jcollection_.find_by_order(current_index);
+                        removal_waiting_elements_.push(*element);
+                        display(*element);
+                        decrease_iterations_();
+                        current_index++;
+                } else {
+                        step          = current_index - n_;
+                        empty_collection_();
+                        n_            = Jcollection_.size();
+                } 
+        }
+}
+
+template <typename T, typename K>
+void JosephusCalculator<T,K>::
+        empty_collection_(){
+
+        while(!removal_waiting_elements_.empty()) {
+                T element_to_be_removed = removal_waiting_elements_.front();
+                removal_waiting_elements_.pop();
+                Jcollection_.erase(element_to_be_removed);
+        }
+}
+
 // untie std in/out to speed up computation
 void desyncio() {
         ios_base::sync_with_stdio(false);
@@ -98,7 +158,7 @@ int main() {
         cin >> n >> k;
 
         JosephusCalculator<size_t, ui64> jc(n, k);
-        jc.solve_naive_();
+        jc.solve_efficient_v1_();
 
         return 0;
 }
