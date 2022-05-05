@@ -34,6 +34,15 @@ void display(T val) {
         cout << val << " ";
 }
 
+enum class State {
+        Empty,
+        Naive,
+        V1,
+        V2
+};
+
+
+// better do via inheritance -- continue
 template <typename T,
           typename K>
 class JosephusCalculator {
@@ -41,10 +50,11 @@ public:
         explicit JosephusCalculator(size_t n,
                                     ui64 k) :
         n_(n),
-        counter_(1u),
         run_(n),
         index_(0u),
         k_(k),
+        counter_(1u),
+        step(-1),
         range_(n)
         {
                 iota(range_.begin(), range_.end(), 1);
@@ -76,14 +86,19 @@ public:
         void empty_collection_();
 
 private:
-        T n_            = 0;
-        T counter_      = 0;
-        T run_          = 0;
-        T index_        = 0;
-        K k_            = 0;
-        vector<T> range_;
-        indexed_set Jcollection_;
-        queue<T> removal_waiting_elements_;
+        T n_            = 0; // common
+        T run_          = 0; // common
+        T index_        = 0; // common
+        K k_            = 0; // common
+
+        T counter_      = 0; //naive
+
+        int64_t step    = -1; //v1
+
+        vector<T> range_; //naive
+        indexed_set Jcollection_; //v1
+
+        queue<T> removal_waiting_elements_; //v1
 };
 
 template <typename T, typename K>
@@ -108,7 +123,6 @@ void JosephusCalculator<T,K>::
 template <typename T, typename K>
 void JosephusCalculator<T,K>::
         solve_efficient_v1_(){
-        int64_t step = -1;
         T current_index = index_;
 
         while(run_) {
