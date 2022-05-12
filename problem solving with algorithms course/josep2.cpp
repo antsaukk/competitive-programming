@@ -22,81 +22,112 @@ RESULT:
 #include <numeric>
 #include <ext/pb_ds/assoc_container.hpp>
 
+//#include "profile.h"
+
 using namespace std;
 using namespace __gnu_pbds;
 
 #define ui64 uint64_t
 
-typedef tree<size_t,null_type,less<size_t>,rb_tree_tag,tree_order_statistics_node_update> indexed_set;
+typedef tree<size_t, null_type,less<size_t>, rb_tree_tag, tree_order_statistics_node_update> indexed_set;
 
 template<typename T>
 void display(T val) {
         cout << val << " ";
 }
 
-template <typename T,
-          typename K>
+template <typename T, typename K> 
 class JosephusCalculator {
 public:
-        explicit JosephusCalculator(size_t n,
-                                    ui64 k) :
+        JosephusCalculator(size_t n, ui64 k) : 
         n_(n),
-        counter_(1u),
         run_(n),
         index_(0u),
-        k_(k),
+        k_(k)
+        {}
+
+        virtual void init() = 0;
+
+        virtual void solve() = 0;
+
+        void increase_index()       { index_++; }
+
+        void modulate_index()       { index_ %= n_; }
+
+        void decrease_iterations_() { run_--; }
+
+        void setSize(T value)       { n_ = value; }
+
+        K getOrderStep() const      { return k_; }
+
+        T getIndex() const          { return index_; }
+
+        T getSize()  const          { return n_; }
+
+        T getRun()  const           { return run_; }
+private:
+        T n_; 
+        T run_; 
+        T index_;
+        K k_;
+};
+
+template <typename T, typename K>
+class JosephusNaive : public JosephusCalculator<T, K> {
+public:
+        JosephusNaive(size_t n, ui64 k) :
+        JosephusCalculator<T, K> (n, k),
+        counter_(1u),
         range_(n)
         {
-                iota(range_.begin(), range_.end(), 1);
-                init_index_set_();
+                init();
         }
 
-        void init_index_set_() {
-                for (const auto el : range_) {
-                        Jcollection_.insert(el);
-                }
+        void init() override {
+                iota(range_.begin(), range_.end(), 1);
         }
 
         void increase_counter_()        { counter_++; }
 
         void reset_counter_()           { counter_ = 1; }
 
-        void decrease_iterations_()     { run_--; }
+        void remove_element_();       
 
-        void remove_element_()          { range_[index_] = 0; }
+        void index_up_();              
 
-        void index_up_()                { index_++; index_ %= n_; }
-
-        void solve_naive_();
-
-        void solve_efficient_v1_();
-
-        void solve_efficient_v2_();
-
-        void empty_collection_();
+        void solve() override;
 
 private:
-        T n_            = 0;
-        T counter_      = 0;
-        T run_          = 0;
-        T index_        = 0;
-        K k_            = 0;
-        vector<T> range_;
-        indexed_set Jcollection_;
-        queue<T> removal_waiting_elements_;
+        T counter_ ;
+
+        vector<T> range_; 
 };
 
-template <typename T, typename K>
-void JosephusCalculator<T,K>::
-        solve_naive_(){
+template<typename T, typename K>
+void JosephusNaive<T, K>::remove_element_() {
+        T ind       = JosephusCalculator<T, K>::getIndex();
+        range_[ind] = 0;
+}
 
-        while (run_) {
-                if (range_[index_]) {
-                        if (counter_ % (k_+1) != 0) {
+template<typename T, typename K>
+void JosephusNaive<T, K>::index_up_() {
+        JosephusCalculator<T, K>::increase_index();
+        JosephusCalculator<T, K>::modulate_index();
+}
+
+template <typename T, typename K>
+void JosephusNaive<T, K>::
+        solve(){
+
+        while (JosephusCalculator<T, K>::getRun()) { 
+                T current_index = JosephusCalculator<T, K>::getIndex();
+                if (range_[current_index]) { 
+                        K currentOrder = JosephusCalculator<T, K>::getOrderStep() + 1;
+                        if (counter_ % currentOrder != 0) {
                                 increase_counter_();
                         } else {
-                                display(range_[index_]);
-                                decrease_iterations_();
+                                display(range_[current_index]);
+                                JosephusCalculator<T, K>::decrease_iterations_();
                                 remove_element_();
                                 reset_counter_();
                         }
@@ -105,37 +136,65 @@ void JosephusCalculator<T,K>::
         }
 }
 
-template <typename T, typename K>
-void JosephusCalculator<T,K>::
-        solve_efficient_v1_(){
-        int64_t step = -1;
-        T current_index = index_;
 
-        while(run_) {
+// better do via inheritance -- continue
+template <typename T, typename K>
+class JosephusV1 : public JosephusCalculator<T, K> {
+public:
+        JosephusV1(size_t n, ui64 k) :
+        JosephusCalculator<T, K> (n, k),
+        step(-1)
+        {
+                init();
+        }
+
+        void init() override {
+                T size_ = JosephusCalculator<T, K>::getSize();
+                for (size_t element = 1; element <= size_; element++) {
+                        Jcollection_.insert(element);
+                }
+        }
+
+        void solve() override;
+
+        void empty_collection_();
+
+private:
+        int64_t step;
+        indexed_set Jcollection_;
+        queue<T> removal_waiting_elements_;
+};
+
+template <typename T, typename K>
+void JosephusV1<T,K>::
+        solve(){
+        T current_index = JosephusCalculator<T, K>::getIndex();
+
+        while(JosephusCalculator<T, K>::getRun()) { 
 
                 if (step == -1) {
-                        current_index += k_;
+                        current_index += JosephusCalculator<T, K>::getOrderStep();
                 } else {
                         current_index = step;
                         step          = -1;
                 }
                 
-                if (current_index < n_) {
+                if (current_index < JosephusCalculator<T, K>::getSize()) { 
                         auto element  = Jcollection_.find_by_order(current_index);
                         removal_waiting_elements_.push(*element);
                         display(*element);
-                        decrease_iterations_();
+                        JosephusCalculator<T, K>::decrease_iterations_();
                         current_index++;
                 } else {
-                        step          = current_index - n_;
+                        step          = current_index - JosephusCalculator<T, K>::getSize();
                         empty_collection_();
-                        n_            = Jcollection_.size();
+                        JosephusCalculator<T, K>::setSize(Jcollection_.size());
                 } 
         }
 }
 
 template <typename T, typename K>
-void JosephusCalculator<T,K>::
+void JosephusV1<T, K>::
         empty_collection_(){
 
         while(!removal_waiting_elements_.empty()) {
@@ -151,14 +210,35 @@ void desyncio() {
         cin.tie(nullptr);
 }
 
+template <typename T, typename K>
+void test_Naive(T n, K k) {
+        JosephusNaive<T, K> jc(n, k);
+        jc.solve();
+}
+
+template <typename T, typename K>
+void test_V1(T n, K k) {
+        JosephusV1<T, K> jc(n, k);
+        jc.solve();
+}
+
 int main() {
         desyncio();
         size_t n;
         ui64 k; 
         cin >> n >> k;
 
-        JosephusCalculator<size_t, ui64> jc(n, k);
-        jc.solve_efficient_v1_();
+        /*{
+                LOG_DURATION("Naive running time:");
+                test_Naive(n, k);
+        }
+
+        {
+                LOG_DURATION("V1 running time:");
+                test_V1(n, k);
+        }*/
+
+        test_V1(n, k);
 
         return 0;
 }
