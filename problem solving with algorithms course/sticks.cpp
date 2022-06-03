@@ -3,15 +3,20 @@ There are n sticks with some lengths. Your task is to modify the sticks so that 
 You can either lengthen and shorten each stick. 
 Both operations cost x where x is the difference between the new and original length.
 What is the minimum total cost?
+
 INPUT:
 The first input line contains an integer n: the number of sticks.
 Then there are n integers: p1,p2,…,pn: the lengths of the sticks.
+
 OUTPUT:
 Print one integer: the minimum total cost.
+
 CONSTRAINTS: 
 1 <= n <= 2*10^5
 1 <= pi <= 10^9
+
 RESULT:
+https://cses.fi/alon/result/4029651/
 */
 
 #include <unordered_map>
@@ -19,9 +24,10 @@ RESULT:
 #include <iostream>
 #include <limits.h>
 #include <cmath>
+#include <algorithm>
 #include <random>
 
-#include "profile.h"
+//#include "profile.h"
  
 #define ui64 uint64_t
  
@@ -44,6 +50,9 @@ inline T abs(T value_a, T value_b) {
 	return max(value_a, value_b) - min(value_a, value_b);
 }
 
+/*
+	Generate data for benchmark
+*/
 template <typename T>
 inline void simulate_input(vector<T>& container){
 	std::random_device rd;
@@ -55,6 +64,10 @@ inline void simulate_input(vector<T>& container){
 		container[i] = distr(randengine);
 }
 
+/*
+	Naive solution with hash_map, simply records all the differences between sequence members
+	and chooses minimum, works in O(n^2)
+*/
 template <typename T>
 void solve_naive(vector<T>& container, size_t n) {
 	T INF = numeric_limits<T>::max();
@@ -76,9 +89,13 @@ void solve_naive(vector<T>& container, size_t n) {
  
 	display(best_candidate);
 }
- 
+
+/*
+	Dynamic programming solution, creates dynamic programming table and memorizers the resuls
+	compute in pass i-1 then to use in pass i. Works in O(nlogn)
+*/
 template <typename T>
-void solve_dp_slow(vector<T>& container, size_t n) {
+void solve_dp(vector<T>& container, size_t n) {
 	T INF = numeric_limits<T>::max();
  
 	vector<T> dp(n);
@@ -109,6 +126,26 @@ void solve_dp_slow(vector<T>& container, size_t n) {
  
 	display(best_candidate);
 }
+
+/*
+	Clever solution, uses the fact the the sequence member with smallest distance to other members 
+	is actually median. Works in O(n) with a really small constant :)
+*/
+template <typename T>
+void solve_median(vector<T>& container, size_t n) {
+	sort(container.begin(), container.end());
+	T med = 0; 
+	if (n % 2) med = container[n/2];
+	else med = (container[n/2 - 1] + container[n/2])/2;
+	
+	T best_candidate    = 0;
+
+	for (size_t i = 0; i < n; i++) {
+		best_candidate += ::abs(container[i], med);
+	}
+
+	display(best_candidate);
+}
  
 // io opt
 inline void desyncio() {
@@ -123,13 +160,14 @@ int main() {
 	cin >> n; 
  
 	vector<ui64> v(n);
-	simulate_input(v);
-	//read(v); 
+	//simulate_input(v);
+	read(v); 
  	
  	{
- 		LOG_DURATION("Running time:");
+ 		//LOG_DURATION("\nRunning time: ");
+ 		//solve_naive(v, n);
  		//solve_dp_slow(v, n);
- 		solve_naive(v, n);
+ 		solve_median(v, n);
  	}
 	
  
