@@ -47,9 +47,10 @@ void solve(T n) {
  
 	for (size_t i = 7; i <= n; i++) {
 		for (auto dice : dices) {
-			if (i - dice >= 0) 
+			if (i - dice >= 0) {
 				dp[i] += dp[i-dice];
 				dp[i] %= DIV;
+			}
 		}
 	}
 	display(dp[n]);
