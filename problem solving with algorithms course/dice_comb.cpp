@@ -1,7 +1,7 @@
 /*
 Your task is to count the number of ways to construct sum n by throwing a dice one or more times.
 Each throw produces an outcome between 1 and 6.
-
+ 
 For example, if n=3, there are 4 ways:
 1+1+1
 1+2
@@ -18,7 +18,7 @@ CONSTRAINTS:
 1 <= n <= 10^6
  
 VERIFY:
-https://cses.fi/problemset/result/4064345/
+https://cses.fi/problemset/result/4074240/
 */
  
 #include <vector>
@@ -26,10 +26,8 @@ https://cses.fi/problemset/result/4064345/
 #include <iostream>
  
 using namespace std;
-using ui64 = uint64_t;
+using i64 = int64_t;
 constexpr long long DIV = 1'000'000'007;
- 
-ui64 sum = 0;
  
 template<typename T>
 void display(T val){
@@ -40,12 +38,9 @@ template <typename T>
 void solve(T n) {
 	vector<int> dices = {1, 2, 3, 4, 5, 6};
 	vector<T> dp(n + 1);
-	dp[1] = 1;
-	for (size_t i = 2; i <= 6; i++) {
-		dp[i] = dp[i-1] * 2;
-	}
+	dp[0] = 1;
  
-	for (size_t i = 7; i <= n; i++) {
+	for (i64 i = 1; i <= n; i++) {
 		for (auto dice : dices) {
 			if (i - dice >= 0) {
 				dp[i] += dp[i-dice];
@@ -55,7 +50,7 @@ void solve(T n) {
 	}
 	display(dp[n]);
 }
-
+ 
  
 inline void desyncio() {
 	ios_base::sync_with_stdio(false);
@@ -66,7 +61,7 @@ inline void desyncio() {
 int main() {
 	desyncio();
  
-	ui64 n;
+	i64 n;
 	cin >> n;
  
 	solve(n);
