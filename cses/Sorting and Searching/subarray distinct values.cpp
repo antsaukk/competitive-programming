@@ -5,11 +5,14 @@ INPUT:
 The first input line has two integers n and k.
 
 The next line has n integers x1,x2,…,xn: the contents of the array.
+
 OUTPUT:
 Print one integer: the number of subarrays.
+
 CONSTRAINTS:
 1 <= k, n <= 2*10^5
 1 <= x_i <= 10^9
+
 RESULT:
 https://cses.fi/alon/result/3806538/
 */

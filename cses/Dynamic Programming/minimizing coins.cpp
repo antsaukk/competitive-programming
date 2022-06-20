@@ -1,15 +1,9 @@
 /*
-Consider a money system consisting of n
-coins. Each coin has a positive integer value. 
-Your task is to calculate the number of distinct ordered ways you can produce a money sum x
-using the available coins.
- 
- 
-For example, if the coins are {2,3,5}
-and the desired sum is 9, there are 3 ways:
-2+2+5
-3+3+3
-2+2+2+3
+Consider a money system consisting of n coins. 
+Each coin has a positive integer value. 
+Your task is to produce a sum of money x using the available coins in such a way that the number of coins is minimal.
+
+For example, if the coins are {1,5,7} and the desired sum is 11, an optimal solution is 5+5+1 which requires 3 coins.
  
 INPUT:
 The first input line has two integers n and x: the number of coins and the desired sum of money.
@@ -17,7 +11,7 @@ The first input line has two integers n and x: the number of coins and the desir
 The second line has n distinct integers c1,c2,…,cn: the value of each coin.
  
 OUPUT:
-Print the number of ways modulo 10^9+7.
+Print one integer: the minimum number of coins. If it is not possible to produce the desired sum, print −1.
  
 CONSTRAINTS:
 1 <= n  <= 100
@@ -25,7 +19,7 @@ CONSTRAINTS:
 1 <= ci <= 10^6
  
 VERIFY:
-https://cses.fi/problemset/task/1634/
+ 
 */
  
 #include <vector>
@@ -42,11 +36,21 @@ void display(T val){
 }
  
 template <typename T>
+inline void read(vector<T>& container) {
+	for (int i = 0; i < container.size(); i++)
+		cin >> container[i];
+}
+ 
+inline void desyncio() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(nullptr);
+	cout.tie(nullptr);
+}
+ 
+template <typename T>
 void solve(T n, T x) {
 	vector<T> coins(n);
- 
-	for (int i = 0; i < n; i++) 
-		cin >> coins[i];
+	read(coins);
  
 	vector<T> dp(x + 1);
 	dp[0] = 0;
@@ -63,13 +67,6 @@ void solve(T n, T x) {
 	}
  
 	display(dp[x] < INF ? dp[x] : -1);
-}
- 
- 
-inline void desyncio() {
-	ios_base::sync_with_stdio(false);
-	cin.tie(nullptr);
-	cout.tie(nullptr);
 }
  
 int main() {
