@@ -13,9 +13,28 @@ Print one integer: the number of rooms.
  
 CONSTRAINTS:
 1 <= n,m  <= 1000
- 
-VERIFY:
 
+EXAMPLE:
+
+Input:
+5 8
+########
+#..#...#
+####.#.#
+#..#...#
+########
+
+Output:
+3
+
+SOLUTION: 
+Observe that map with the rooms can be encoded as graph with several connected components. 
+Then, we count all connected components: for every cell that is not the wall, 
+start Depth-First search and mark all the cells that are part of the room (nodes of the connected component).
+For fun, we encode the graph as a bit map with set bit being the node.
+
+VERIFY:
+https://cses.fi/problemset/task/1192/
 */
 
 #include <iostream>
@@ -31,10 +50,18 @@ void PrintOut(T value, string const& delimeter = "") {
 	cout << value << delimeter;
 }
 
+bool CheckBounds(const size_t size) {
+    return (size < 1 || size > 1000);
+}
+
+bool CheckInput(const char cell) {
+    return (cell != '.' && cell != '#');
+}
+
 struct BitVector {
 public:
-    explicit BitVector(const int graphSize) :
-    bitvector(ComputeSizeOfBitvector(graphSize))
+    explicit BitVector(const int sequenceLength) :
+    bitvector(ComputeSizeOfBitvector(sequenceLength))
     {}
 
     inline void SetBit(const int position) {
@@ -49,8 +76,8 @@ public:
         return ((bitvector[bitix] & (ONE << shift)) >> shift);
     }
 
-    inline int ComputeSizeOfBitvector(const int graphSize) const {
-        return (graphSize + DIV - 1) / DIV;
+    inline int ComputeSizeOfBitvector(const int sequenceLength) const {
+        return (sequenceLength + DIV - 1) / DIV;
     }
 
     inline uint64_t GetBits(const int position) const {
@@ -58,11 +85,10 @@ public:
     }
 
 private:
+    static const long long DIV = 64L;
+    static const long long ONE = 1L;
 
-	static const long long DIV = 64L;
-	static const long long ONE = 1L;
-
-	inline int ComputeShift(const int position) const {
+    inline int ComputeShift(const int position) const {
         return DIV - position % DIV - 1;
     }
 
@@ -71,23 +97,28 @@ private:
 
 class Graph {
 public:
-	explicit Graph(const int n, const int m) : 
-	height(n),
-	width(m),
-	size(n * m),
-	adjacentEdges(n * m),
-	visitedNodes(n * m)
-	{}
+    explicit Graph(const int n, const int m) : 
+    height(n),
+    width(m),
+    size(n * m),
+    adjacentEdges(n * m),
+    visitedNodes(n * m)
+    {}
 
-	inline void Init() {
+    void Init() {
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
-    			char cell; 
-    			cin >> cell;
+                    char cell;
+                    cin >> cell;
 
-    			if (cell == '.')
-    				MarkFreeSpaceOnTheMap(i, j);
-    		}
+                    if (CheckInput(cell)) {
+                        throw invalid_argument("Incorrect input!");
+                    }
+
+                    if (cell == '.') {
+                        MarkFreeSpaceOnTheMap(i, j);
+                    }
+            }
     	}
     }
 
@@ -119,19 +150,47 @@ public:
     	counter = 0;
     }
 
-    inline void DepthFirstSearch(const int y, const int x) {
-    	if (NodeHasBeenVisited(y, x) || CellIsWall(y, x)) return;
+    inline short ComputeMinimumHorizontalLeftBound(const short x) const {
+        return max(x - 1, 0);
+    }
+
+    inline short ComputeMaximumHorizontalRightBound(const short x) const {
+        return min(x + 1, width - 1);
+    }
+
+    inline short ComputeMaximumVerticalUpperBound(const short y) const {
+        return max(y - 1, 0);
+    }
+
+    inline short ComputeMinimumVerticalLowerBound(const short y) const {
+        return min(y + 1, height - 1);
+    }
+
+    inline const auto ComputeNeighbouringNodes(const short y, const short x) const {
+
+        array<pair<short, short>, 4> neighbourNodes = {
+
+            {
+                {ComputeMinimumHorizontalLeftBound(x), y},
+
+                {ComputeMaximumHorizontalRightBound(x), y},
+
+                {x, ComputeMaximumVerticalUpperBound(y)},
+
+                {x, ComputeMinimumVerticalLowerBound(y)}
+            }
+
+        };
+
+        return neighbourNodes;
+    }
+
+    void DepthFirstSearch(const int y, const int x) {
+        if (NodeHasBeenVisited(y, x) || CellIsWall(y, x)) return;
     	VisitNode(y, x);
     	CountNode();
 
-    	array<pair<short, short>, 4> neighbourNodes = {
-    		{
-    			{max(x - 1, 0), y},
-    			{min(x + 1, width), y},
-    			{x, max(y - 1, 0)},
-    			{x, min(y + 1, height)}
-    		}
-    	};
+        const auto neighbourNodes = ComputeNeighbouringNodes(y, x);        
 
     	for (const auto& [x0, y0] : neighbourNodes) {
     		DepthFirstSearch(y0, x0);
@@ -139,19 +198,20 @@ public:
     }
 
 
-    inline void ComputeConnectedComponents() {
+    void ComputeConnectedComponents() {
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
-    			DepthFirstSearch(i, j);
+                    DepthFirstSearch(i, j);
 
-    			if (counter > 0)
-    				CountConnectedComponent();
-    			ReleaseCounter();
-    		}
+                    if (counter > 0) {
+                        CountConnectedComponent();
+                        ReleaseCounter();
+                    }
+            }
     	}
     }
 
-    inline void DisplayGrid() const {
+    void DisplayGrid() const {
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
     			PrintOut(adjacentEdges.GetBit(LinearIndex(i, j)), " ");
@@ -165,30 +225,43 @@ public:
     }
 
 private:
-	int height;
-	int width;
-	size_t size;
+    int height;
+    int width;
+    size_t size;
 
-	BitVector adjacentEdges;
-	BitVector visitedNodes;
+    BitVector adjacentEdges;
+    BitVector visitedNodes;
 
-	int counter = 0;
-	int connectedComponents = 0;
+    size_t counter = 0;
+    size_t connectedComponents = 0;
 
-	inline size_t LinearIndex(const int y, const int x) const {
-		return x + y * width;
-	}
+    inline size_t LinearIndex(const int y, const int x) const {
+        return x + y * width;
+    }
 };
 
+void run() {
+    size_t n, m; 
+    cin >> n >> m;
+
+    if (CheckBounds(n) || CheckBounds(m)) {
+        throw invalid_argument("Incorrect dimensions!");
+    }
+
+    Graph Grid(n, m);
+
+    Grid.Init();
+    Grid.ComputeConnectedComponents();
+    Grid.DisplayConnectedComponents();
+}
+
 int main() {
-	size_t n, m; 
-	cin >> n >> m;
+    try {
+        run();
+    } catch (const invalid_argument& exception) {
+        cerr << exception.what() << "\n";
+        return -1;
+    }
 
-	Graph Grid(n, m);
-
-	Grid.Init();
-	Grid.ComputeConnectedComponents();
-	Grid.DisplayConnectedComponents();
-
-	return 0;
+    return 0;
 }
