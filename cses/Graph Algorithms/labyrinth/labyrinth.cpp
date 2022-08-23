@@ -1,15 +1,21 @@
 /*
-You are given a map of a building, and your task is to count the number of its rooms.
-The size of the map is n×m squares, and each square is either floor or wall.
-You can walk left, right, up, and down through the floor squares.
+You are given a map of a labyrinth, and your task is to find a path from start to end.
+You can walk left, right, up and down.
  
 INPUT:
 The first input line has two integers n and m: the height and width of the map.
 
-Then there are n lines of m characters describing the map. Each character is either . (floor) or # (wall).
+Then there are n lines of m characters describing the labyrinth.
+Each character is . (floor), # (wall), A (start), or B (end).
+There is exactly one A and one B in the input.
  
-OUPUT:
-Print one integer: the number of rooms.
+OUTPUT:
+
+First print "YES", if there is a path, and "NO" otherwise.
+
+If there is a path, print the length of the shortest such path
+and its description as a string consisting of characters L (left), R (right), U (up), and D (down).
+You can print any valid solution.
  
 CONSTRAINTS:
 1 <= n,m  <= 1000
@@ -25,7 +31,9 @@ Input:
 ########
 
 Output:
-3
+YES
+9
+LDDRRRRRU
 
 SOLUTION: 
 
@@ -47,16 +55,22 @@ VERIFY:
 
 using namespace std;
 
+struct hashFunction {
+    inline size_t operator()(const pair<int,int> & U) const {
+        return U.first * 9113 + U.second;
+    }
+};
+
 template <typename T>
-void PrintOut(T value, string const& delimeter = "") {
+inline void PrintOut(T value, string const& delimeter = "") {
 	cout << value << delimeter;
 }
 
-bool CheckBounds(const size_t size) {
+inline bool CheckBounds(const size_t size) {
     return (size < 1 || size > 1000);
 }
 
-bool CheckInput(const char cell) {
+inline bool CheckInput(const char cell) {
     return (cell != '.' && cell != '#' && cell != 'A' && cell != 'B');
 }
 
@@ -106,97 +120,43 @@ public:
     adjacentEdges(n * m),
     visitedNodes(n * m),
     distances(n * m)
-    {}
+    {
+        if (CheckBounds(n) || CheckBounds(m))
+            throw invalid_argument("Incorrect dimensions!");
+    }
 
     void Init() {
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
                     char cell;
-                    cin >> cell;
+                    cin >> cell; //use macro here
 
-                    switch(cell) {
-                        case '.':
-                            MarkFreeSpaceOnTheMap(i, j);
-                            break;
-                        case 'A':
-                            MarkFreeSpaceOnTheMap(i, j); 
-                            startingNode = {j, i};
-                            break;
-                        case 'B':
-                            MarkFreeSpaceOnTheMap(i, j);
-                            endingNode = {j, i};
-                            break;
-                        case '#':
-                            continue;
-                        default:
-                            throw invalid_argument("Incorrect input!");
-                    }
+                    AssignCellValue(cell, i, j);
             }
     	}
     }
 
-    inline size_t NodeHasBeenVisited(const int y, const int x) const {
-    	return visitedNodes.GetBit(LinearIndex(y, x));
-    }
+    void SearchShortestPath() {
+        InitializeDistances();
 
-    inline size_t CellIsWall(const int y, const int x) const {
-    	return !adjacentEdges.GetBit(LinearIndex(y, x));
-    }
+        AssignDistanceFromFirstNode(
+            startingNode.second,
+            startingNode.first,
+            0
+        );
 
-    inline void VisitNode(const int y, const int x) {
-    	visitedNodes.SetBit(LinearIndex(y, x));;
-    }
-
-    inline void MarkFreeSpaceOnTheMap(const int y, const int x) {
-    	adjacentEdges.SetBit(LinearIndex(y, x));
-    }
-
-    inline int ComputeMinimumHorizontalLeftBound(const int x) const {
-        return max(x - 1, 0);
-    }
-
-    inline int ComputeMaximumHorizontalRightBound(const int x) const {
-        return min(x + 1, width - 1);
-    }
-
-    inline int ComputeMaximumVerticalUpperBound(const int y) const {
-        return max(y - 1, 0);
-    }
-
-    inline int ComputeMinimumVerticalLowerBound(const int y) const {
-        return min(y + 1, height - 1);
-    }
-
-    inline const auto ComputeNeighbouringNodes(const int y, const int x) const {
-
-        set<pair<int, int>> neighbourNodes(
+        PutNodeToPriorityQueue(
+            0,
             {
-                {
-                    ComputeMinimumHorizontalLeftBound(x),
-                    y
-                },
-
-                {
-                    ComputeMaximumHorizontalRightBound(x),
-                    y
-                },
-
-                {
-                    x,
-                    ComputeMaximumVerticalUpperBound(y)
-                },
-
-                {
-                    x,
-                    ComputeMinimumVerticalLowerBound(y)
-                }
+                startingNode.first,
+                startingNode.second
             }
         );
 
-        return neighbourNodes;
+        FindShortestPathWithDijkstraAlgorithm();
     }
 
-    void SearchShortestPath() {
+    void InitializeDistances() {
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
                 if (CellIsWall(i, j))
@@ -205,17 +165,22 @@ public:
                     distances[LinearIndex(i, j)] = height * width + 1;
             }
         }
+    }
 
-        distances[LinearIndex(startingNode.second, startingNode.first)] = 0;
+    inline void AssignDistanceFromFirstNode(const int y, const int x, int distance){
+        distances[LinearIndex(y, x)] = distance;
+    }
+
+    inline void PutNodeToPriorityQueue(int distance, pair<int, int> node) {
         adjacentDistances.push(
-            {0,
-                {
-                    startingNode.first,
-                    startingNode.second
-                }
+            {
+                distance,
+                node
             }
         );
+    }
 
+    void FindShortestPathWithDijkstraAlgorithm() {
         while (!adjacentDistances.empty()) {
             auto currentNode = adjacentDistances.top();
             adjacentDistances.pop();
@@ -306,7 +271,7 @@ public:
                     path.push(directions[i]);
                     x = x0;
                     y = y0;
-
+ 
                     break;
                 }
 
@@ -351,21 +316,97 @@ private:
     inline size_t LinearIndex(const int y, const int x) const {
         return x + y * width;
     }
+
+    void AssignCellValue(const char cell, const int y, const int x) {
+        switch(cell) {
+            case '.':
+                MarkFreeSpaceOnTheMap(y, x);
+                break;
+            case 'A':
+                MarkFreeSpaceOnTheMap(y, x);
+                startingNode = {x, y};
+                break;
+            case 'B':
+                MarkFreeSpaceOnTheMap(y, x);
+                endingNode = {x, y};
+                break;
+            case '#':
+                break;
+            default:
+                throw invalid_argument("Incorrect input!");
+        }
+    }
+
+    inline void MarkFreeSpaceOnTheMap(const int y, const int x) {
+        adjacentEdges.SetBit(LinearIndex(y, x));
+    }
+
+    inline size_t NodeHasBeenVisited(const int y, const int x) const {
+        return visitedNodes.GetBit(LinearIndex(y, x));
+    }
+
+    inline size_t CellIsWall(const int y, const int x) const {
+        return !adjacentEdges.GetBit(LinearIndex(y, x));
+    }
+
+    inline void VisitNode(const int y, const int x) {
+        visitedNodes.SetBit(LinearIndex(y, x));;
+    }
+
+    inline const set<pair<int, int>> ComputeNeighbouringNodes(const int y, const int x) const {
+
+        set<pair<int, int>> neighbourNodes(
+            {
+                {
+                    ComputeMinimumHorizontalLeftBound(x),
+                    y
+                },
+
+                {
+                    ComputeMaximumHorizontalRightBound(x),
+                    y
+                },
+
+                {
+                    x,
+                    ComputeMaximumVerticalUpperBound(y)
+                },
+
+                {
+                    x,
+                    ComputeMinimumVerticalLowerBound(y)
+                }
+            }
+        );
+
+        return neighbourNodes;
+    }
+
+    inline int ComputeMinimumHorizontalLeftBound(const int x) const {
+        return max(x - 1, 0);
+    }
+
+    inline int ComputeMaximumHorizontalRightBound(const int x) const {
+        return min(x + 1, width - 1);
+    }
+
+    inline int ComputeMaximumVerticalUpperBound(const int y) const {
+        return max(y - 1, 0);
+    }
+
+    inline int ComputeMinimumVerticalLowerBound(const int y) const {
+        return min(y + 1, height - 1);
+    }
 };
 
 void run() {
     size_t n, m; 
     cin >> n >> m;
 
-    if (CheckBounds(n) || CheckBounds(m)) {
-        throw invalid_argument("Incorrect dimensions!");
-    }
-
     Graph Grid(n, m);
 
     Grid.Init();
     Grid.SearchShortestPath();
-    //Grid.DisplayGrid();
     Grid.Check();
 }
 
