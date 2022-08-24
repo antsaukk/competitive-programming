@@ -37,7 +37,14 @@ LDDRRRRRU
 
 SOLUTION: 
 
-VERIFY:
+Use Dijkstra algorithm to find the shortest path from A to B if such exists. 
+If the path exists, the cell B contains the length of minimal shortest path from A to B.
+Then recostruct the path, by starting from B and always selecting the next cell 
+with distance that is less than current distancy by 1, unless you arrive back to A.
+
+VERIFY HERE:
+
+https://cses.fi/problemset/task/1193/
 
 */
 
@@ -52,6 +59,8 @@ VERIFY:
 #include <queue>
 #include <limits>
 #include <cmath>
+
+#define READ(x) (cin >> (x))
 
 using namespace std;
 
@@ -124,7 +133,7 @@ public:
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
                     char cell;
-                    cin >> cell;
+                    READ(cell);
 
                     AssignCellValue(cell, i, j);
             }
@@ -172,29 +181,7 @@ public:
         });
 
         while(StartingNodeIsNotReached(y, x)) {
-            array<pair<int, int>, 4> neighbourNodes = {
-                {
-                    {
-                        ComputeMinimumHorizontalLeftBound(x),
-                        y
-                    },
-
-                    {
-                        ComputeMaximumHorizontalRightBound(x),
-                        y
-                    },
-
-                    {
-                        x,
-                        ComputeMaximumVerticalUpperBound(y)
-                    },
-
-                    {
-                        x,
-                        ComputeMinimumVerticalLowerBound(y)
-                    }
-                }
-            };
+            const auto neighbourNodes = ComputeNeighbouringNodes(y, x);
 
             for (int i = 0; i < 4; i++) {
 
@@ -206,7 +193,7 @@ public:
                 bool thisIsNextOptimalStep = (distances[LinearIndex(y0, x0)] == distances[LinearIndex(y, x)] - 1);
 
                 if (thisIsNextOptimalStep) {
-                    
+
                     path.push(directions[i]);
                     x = x0;
                     y = y0;
@@ -292,31 +279,30 @@ private:
         visitedNodes.SetBit(LinearIndex(y, x));;
     }
 
-    inline const set<pair<int, int>> ComputeNeighbouringNodes(const int y, const int x) const {
-
-        set<pair<int, int>> neighbourNodes(
-            {
+    inline const array<pair<int, int>, 4> ComputeNeighbouringNodes(const int y, const int x) const {
+        array<pair<int, int>, 4> neighbourNodes = {
                 {
-                    ComputeMinimumHorizontalLeftBound(x),
-                    y
-                },
+                    {
+                        ComputeMinimumHorizontalLeftBound(x),
+                        y
+                    },
 
-                {
-                    ComputeMaximumHorizontalRightBound(x),
-                    y
-                },
+                    {
+                        ComputeMaximumHorizontalRightBound(x),
+                        y
+                    },
 
-                {
-                    x,
-                    ComputeMaximumVerticalUpperBound(y)
-                },
+                    {
+                        x,
+                        ComputeMaximumVerticalUpperBound(y)
+                    },
 
-                {
-                    x,
-                    ComputeMinimumVerticalLowerBound(y)
+                    {
+                        x,
+                        ComputeMinimumVerticalLowerBound(y)
+                    }
                 }
-            }
-        );
+            };
 
         return neighbourNodes;
     }
@@ -411,8 +397,9 @@ private:
 };
 
 void run() {
-    size_t n, m; 
-    cin >> n >> m;
+    size_t n, m;
+    READ(n);
+    READ(m);
 
     Graph Grid(n, m);
 
