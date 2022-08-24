@@ -64,6 +64,12 @@ https://cses.fi/problemset/task/1193/
 
 using namespace std;
 
+inline void desyncio() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.tie(nullptr);
+}
+
 template <typename T>
 inline void PrintOut(T value, string const& delimeter = "") {
 	cout << value << delimeter;
@@ -409,6 +415,8 @@ void run() {
 }
 
 int main() {
+    desyncio();
+    
     try {
         run();
     } catch (const invalid_argument& exception) {
