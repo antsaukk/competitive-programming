@@ -55,12 +55,6 @@ VERIFY:
 
 using namespace std;
 
-struct hashFunction {
-    inline size_t operator()(const pair<int,int> & U) const {
-        return U.first * 9113 + U.second;
-    }
-};
-
 template <typename T>
 inline void PrintOut(T value, string const& delimeter = "") {
 	cout << value << delimeter;
@@ -117,6 +111,7 @@ public:
     height(n),
     width(m),
     size(n * m),
+    INF(n * m + 1),
     adjacentEdges(n * m),
     visitedNodes(n * m),
     distances(n * m)
@@ -129,7 +124,7 @@ public:
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
                     char cell;
-                    cin >> cell; //use macro here
+                    cin >> cell;
 
                     AssignCellValue(cell, i, j);
             }
@@ -139,7 +134,7 @@ public:
     void SearchShortestPath() {
         InitializeDistances();
 
-        AssignDistanceFromFirstNode(
+        SetDistance(
             startingNode.second,
             startingNode.first,
             0
@@ -156,64 +151,6 @@ public:
         FindShortestPathWithDijkstraAlgorithm();
     }
 
-    void InitializeDistances() {
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                if (CellIsWall(i, j))
-                    distances[LinearIndex(i, j)] = -1;
-                else
-                    distances[LinearIndex(i, j)] = height * width + 1;
-            }
-        }
-    }
-
-    inline void AssignDistanceFromFirstNode(const int y, const int x, int distance){
-        distances[LinearIndex(y, x)] = distance;
-    }
-
-    inline void PutNodeToPriorityQueue(int distance, pair<int, int> node) {
-        adjacentDistances.push(
-            {
-                distance,
-                node
-            }
-        );
-    }
-
-    void FindShortestPathWithDijkstraAlgorithm() {
-        while (!adjacentDistances.empty()) {
-            auto currentNode = adjacentDistances.top();
-            adjacentDistances.pop();
-
-            auto x = currentNode.second.first;
-            auto y = currentNode.second.second;
-
-            if (NodeHasBeenVisited(y, x)) continue;
-            VisitNode(y, x);
-
-            const auto neighbourNodes = ComputeNeighbouringNodes(y, x);
-
-            for (const auto& [x0, y0] : neighbourNodes) {
-
-                if (CellIsWall(y0, x0)) continue;
-                if (distances[LinearIndex(y, x)] + 1 < distances[LinearIndex(y0, x0)]) {
-                    
-                    distances[LinearIndex(y0, x0)] = distances[LinearIndex(y, x)] + 1;
-
-                    adjacentDistances.push(
-                        {
-                            -distances[LinearIndex(y0, x0)],
-                            {
-                                x0,
-                                y0
-                            }
-                        }
-                    );
-                }
-            }
-        }
-    }
-
     void DisplayGrid() const {
     	for(int i = 0; i < height; i++) {
     		for(int j = 0; j < width; j++) {
@@ -223,7 +160,7 @@ public:
     	}
     }
 
-    void Reconstruct() {
+    void ReconstructShortestPath() {
         int x = endingNode.first;
         int y = endingNode.second;
 
@@ -234,9 +171,7 @@ public:
             {3, 'U'}
         });
 
-        while(x != startingNode.first || y != startingNode.second) {
-            //const auto neighbourNodes = ComputeNeighbouringNodes(y, x);
-
+        while(StartingNodeIsNotReached(y, x)) {
             array<pair<int, int>, 4> neighbourNodes = {
                 {
                     {
@@ -267,7 +202,11 @@ public:
                 int y0 = neighbourNodes[i].second;
 
                 if (CellIsWall(y0, x0)) continue;
-                if (distances[LinearIndex(y0, x0)] == distances[LinearIndex(y, x)] - 1) {
+
+                bool thisIsNextOptimalStep = (distances[LinearIndex(y0, x0)] == distances[LinearIndex(y, x)] - 1);
+
+                if (thisIsNextOptimalStep) {
+                    
                     path.push(directions[i]);
                     x = x0;
                     y = y0;
@@ -279,29 +218,29 @@ public:
         }
     }
 
-    void ShowPath() {
-        while(!path.empty()){
-            auto direction = path.top();
-            path.pop();
-            PrintOut(direction);
-        }
-    }
-
     void Check() {
-        if (distances[LinearIndex(endingNode.second, endingNode.first)] != height*width + 1) {
+        if (GetDistance(endingNode.second, endingNode.first) != INF) {
             PrintOut("YES", "\n");
-            PrintOut(distances[LinearIndex(endingNode.second, endingNode.first)], "\n");
-            Reconstruct();
+
+            PrintOut(
+                GetDistance(endingNode.second, endingNode.first),
+                "\n"
+            );
+
+            ReconstructShortestPath();
+
             ShowPath();
-        }
-        else
+        } else {
             PrintOut("NO");
+        }
     }
 
 private:
     int height;
     int width;
     size_t size;
+    const int INF;
+    static const int NONREACHABLE = -1;
 
     BitVector adjacentEdges;
     BitVector visitedNodes;
@@ -396,6 +335,78 @@ private:
 
     inline int ComputeMinimumVerticalLowerBound(const int y) const {
         return min(y + 1, height - 1);
+    }
+
+    void InitializeDistances() {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                if (CellIsWall(i, j)){
+                    SetDistance(i, j, NONREACHABLE);
+                } else {
+                    SetDistance(i, j, INF);
+                }
+            }
+        }
+    }
+
+    void FindShortestPathWithDijkstraAlgorithm() {
+        while (!adjacentDistances.empty()) {
+            auto currentNode = adjacentDistances.top();
+            adjacentDistances.pop();
+
+            auto x = currentNode.second.first;
+            auto y = currentNode.second.second;
+
+            if (NodeHasBeenVisited(y, x)) continue;
+            VisitNode(y, x);
+
+            const auto neighbourNodes = ComputeNeighbouringNodes(y, x);
+
+            for (const auto& [x0, y0] : neighbourNodes) {
+
+                if (CellIsWall(y0, x0)) continue;
+                if (GetDistance(y, x) + 1 < GetDistance(y0, x0)) {
+
+                    auto newDistance = GetDistance(y, x) + 1;
+                    SetDistance(y0, x0, newDistance);
+
+                    PutNodeToPriorityQueue(
+                        -GetDistance(y0, x0),
+                        {x0, y0}
+                    );
+                    
+                }
+            }
+        }
+    }
+
+    inline void PutNodeToPriorityQueue(int distance, pair<int, int> node) {
+        adjacentDistances.push(
+            {
+                distance,
+                node
+            }
+        );
+    }
+
+    inline int GetDistance(const int y, const int x) const {
+        return distances[LinearIndex(y, x)];
+    }
+
+    inline void SetDistance(const int y, const int x, int value) {
+        distances[LinearIndex(y, x)] = value;
+    }
+
+    inline bool StartingNodeIsNotReached(const int y, const int x) {
+        return x != startingNode.first || y != startingNode.second;
+    }
+
+    void ShowPath() {
+        while(!path.empty()){
+            auto direction = path.top();
+            path.pop();
+            PrintOut(direction);
+        }
     }
 };
 
