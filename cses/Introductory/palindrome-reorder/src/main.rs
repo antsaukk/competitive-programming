@@ -62,14 +62,14 @@ fn count_letters(input: &str) -> HashMap<char, u32> {
 	bucket
 }
 
-fn split_letters_by_parity(bucket: &HashMap<char, u32>) -> (Vec<(&char, &u32)>, Vec<(&char, &u32)>) {
+fn split_letters_by_parity(bucket: &HashMap<char, u32>) -> (Vec<(char, u32)>, Vec<(char, u32)>) {
 	let mut odd = Vec::new();
 	let mut even = Vec::new();
 
 	for (key, value) in bucket {
 		match value % 2 {
-			1 => { odd.push((key, value)); }
-			_ => { even.push((key, value)); }
+			1 => { odd.push((*key, *value)); }
+			_ => { even.push((*key, *value)); }
 		}
 
 	}
@@ -77,26 +77,21 @@ fn split_letters_by_parity(bucket: &HashMap<char, u32>) -> (Vec<(&char, &u32)>, 
 	(odd, even)
 }
 
-fn find_solution(odd: Vec<(&char, &u32)>, even: Vec<(&char, &u32)>) -> String {
+fn find_solution(odd: &Vec<(char, u32)>, even: &Vec<(char, u32)>) -> String {
 	let mut result = String::new();
 
 	match odd.len() {
 		0 | 1 => {
-			for (key, value) in &even {
+			for (key, value) in even {
 				let substring = (0..*value/2).map(|_| *key).collect::<String>();
 				result.push_str(&substring);
 			}
 
 			let second_half = result.chars().rev().collect::<String>();
 
-			match odd.get(0) {
-
-				Some((key, value)) => {
-					let middle_part = (0..**value).map(|_| *key).collect::<String>();
-					result.push_str(&middle_part);
-				}
-
-				None => ()
+			if let Some((key, value)) = odd.get(0) {
+				let middle_part = (0..*value).map(|_| *key).collect::<String>();
+				result.push_str(&middle_part);
 			}
 
 			result.push_str(&second_half);
@@ -118,7 +113,7 @@ fn solve() -> String {
 
 	let (odd, even) = split_letters_by_parity(&bucket);
 
-	find_solution(odd, even)
+	find_solution(&odd, &even)
 }
 
 fn main() {
