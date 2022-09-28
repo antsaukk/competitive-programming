@@ -50,13 +50,13 @@ where T: Add<Output = T>, T: Sub<Output = T>
 
 trait Summable<T>
 {
-	fn sun(&self) -> T;
+	fn sum(&self) -> T;
 } 
 
-impl Summable<u64> for Vec<u64>
+impl Summable<i64> for Vec<i64>
 {
-	fn sum(&self) -> u64 {
-		let mut res: u64 = 0;
+	fn sum(&self) -> i64 {
+		let mut res: i64 = 0;
 		for element in self {
 			res += *element;
 		}
@@ -64,23 +64,29 @@ impl Summable<u64> for Vec<u64>
 	}
 }
 
-fn solve(n: u64, container: &mut Vec<u64>) -> u64 {
+fn solve(n: u64, container: &mut Vec<i64>) -> i64 {
 	let b = 1 << n;
 	//println!("{:?}", b);
 
-	let mut diff = u64::MAX;
+	let mut min_diff = i64::MAX;
+	let set_sum = container.sum();
 
 	for i in 0..b {
-		let mut subset: Vec<u64> = Vec::new();
-		for j in 0..n {
-			if i&(1<<j) != 0 { subset.push(j); }
+		let mut subset: Vec<i64> = Vec::new();
+		for j in 0..n { 
+			if i&(1<<j) != 0 { subset.push(j as i64); }
 		}
-		//println!("{:?}", subset);
-		let subset_sum = subset.sum();
+		println!("{:?}", subset);
+		let subset_sum1 = subset.sum();
+		let subset_sum2 = set_sum - subset_sum1;
+		let diff = subset_sum2 - subset_sum1;
+		if diff.abs() < min_diff {
+			min_diff = diff.abs();
+		}
 
 	}
 
-	n
+	min_diff
 }
 
 fn main() {
@@ -88,8 +94,8 @@ fn main() {
 
 	let mut apples = read_input()
 		.split_whitespace()
-    	.map(|x| x.parse::<u64>())
-        .collect::<Result<Vec<u64>, _>>()
+    	.map(|x| x.parse::<i64>())
+        .collect::<Result<Vec<i64>, _>>()
         .unwrap();
 
  	println!("{}", solve(n, &mut apples));
