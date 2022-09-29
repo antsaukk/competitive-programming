@@ -1,1 +1,0 @@
-/home/antonsaukkonen/Desktop/learning/libalgos/cses/Introductory/apple-division/target/debug/apple-division: /home/antonsaukkonen/Desktop/learning/libalgos/cses/Introductory/apple-division/src/main.rs
