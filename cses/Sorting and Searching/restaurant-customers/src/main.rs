@@ -55,6 +55,8 @@ fn read_input() -> String {
 fn solve(times: &mut Vec<(i64, i64)>) {
 	times.sort();
 
+	println!("{:?}", times);
+
 	let mut max_cust = 0;
 	let mut cur_cust = 0;
 
