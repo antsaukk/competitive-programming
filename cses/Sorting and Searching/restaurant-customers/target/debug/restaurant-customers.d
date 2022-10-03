@@ -1,0 +1,1 @@
+/home/antonsaukkonen/Desktop/learning/libalgos/cses/Sorting\ and\ Searching/restaurant-customers/target/debug/restaurant-customers: /home/antonsaukkonen/Desktop/learning/libalgos/cses/Sorting\ and\ Searching/restaurant-customers/src/main.rs
