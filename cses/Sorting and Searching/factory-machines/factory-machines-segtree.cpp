@@ -76,14 +76,14 @@ struct MinSegmentTree {
 
 		for (size_t k = n_-1; k >= 1; k--)
 		{
-	        tree_[k] = min(tree_[2*k], tree_[2*k+1]);
-	    }
+			tree_[k] = min(tree_[2*k], tree_[2*k+1]);
+		}
 	}
 
 
 	void change(size_t k)
 	{
-    	k = getIndexOfMin();
+		k = getIndexOfMin();
 	    tree_[k] += init_[k];
 
 	    for (k /= 2; k >= 1; k /= 2)
@@ -99,16 +99,16 @@ struct MinSegmentTree {
 
 	T getMinInRange(T a, T b)
 	{
-	    a += n_;
-	    b += n_;
+		a += n_;
+		b += n_;
 
 	    T x = tree_[a];
 
 	    while (a <= b)
 	    {
-	        if (a%2 == 1) x = min(x, tree_[a++]);
-	        if (b%2 == 0) x = min(x, tree_[b--]);
-	        a /= 2; b /= 2;
+	    	if (a%2 == 1) x = min(x, tree_[a++]);
+	    	if (b%2 == 0) x = min(x, tree_[b--]);
+	    	a /= 2; b /= 2;
 	    }
 	    return x;
 	}
