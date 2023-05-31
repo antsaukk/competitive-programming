@@ -102,15 +102,16 @@ struct MinSegmentTree {
 		a += n_;
 		b += n_;
 
-	    T x = tree_[a];
+		T x = tree_[a];
 
-	    while (a <= b)
-	    {
-	    	if (a%2 == 1) x = min(x, tree_[a++]);
-	    	if (b%2 == 0) x = min(x, tree_[b--]);
-	    	a /= 2; b /= 2;
-	    }
-	    return x;
+		while (a <= b)
+		{
+			if (a%2 == 1) x = min(x, tree_[a++]);
+			if (b%2 == 0) x = min(x, tree_[b--]);
+			a /= 2; b /= 2;
+		}
+
+		return x;
 	}
 
 	const size_t getIndexOfMin() const
