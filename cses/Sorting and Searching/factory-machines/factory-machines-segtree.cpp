@@ -94,7 +94,7 @@ struct MinSegmentTree {
 
 	const T getMin() const
 	{
-	    return tree_[1];
+		return tree_[1];
 	}
 
 	T getMinInRange(T a, T b)
