@@ -84,12 +84,12 @@ struct MinSegmentTree {
 	void change(size_t k)
 	{
 		k = getIndexOfMin();
-	    tree_[k] += init_[k];
+		tree_[k] += init_[k];
 
-	    for (k /= 2; k >= 1; k /= 2)
-	    {
-	        tree_[k] = min(tree_[2*k], tree_[2*k+1]);
-	    }
+		for (k /= 2; k >= 1; k /= 2)
+		{
+			tree_[k] = min(tree_[2*k], tree_[2*k+1]);
+		}
 	}
 
 	const T getMin() const
