@@ -1,0 +1,1 @@
+/Users/antonsaukkonen/Documents/GitHub/libalgos/cses/Graph\ Algorithms/flight-discount/target/debug/flight-discount: /Users/antonsaukkonen/Documents/GitHub/libalgos/cses/Graph\ Algorithms/flight-discount/src/main.rs
